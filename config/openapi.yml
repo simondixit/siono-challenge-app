@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: SIONO Challenge API
+  description: API requested by SIONO to myself =P
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: simon.9864@gmail.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+- url: /api/v1
+ 
+paths:
+  /upload/{top}:
+    post:
+      description: 'returns frecuency words of txt file in JSON format'
+      tags:
+        - Upload txt file
+      operationId: upload
+      parameters:
+        - in: path
+          name: top
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        5XX:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    UploadResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - frecuencies
+      properties:
+        frecuencies:
+          type: array
+          items:
+            type: object
+            properties:
+              word:
+                type: string
+              count:
+                type: integer
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
