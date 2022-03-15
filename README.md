@@ -29,10 +29,16 @@ In the root folder run the following commands to install dependencies and build 
 yarn && yarn build
 ```
 
-Run the app using the following command
+Run the app using the following command:
 
 ```
 yarn start
+```
+
+Use the following command to run tests:
+
+```
+yarn test
 ```
 
 # How to Use the Project
