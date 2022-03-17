@@ -61,8 +61,3 @@ You can open up your browser and go to localhost:3000 where the app will deliver
 - Insert a number inside the input beside the Submit button.
 - Click on Submit button to send the request to the API.
 - Wait to see the result in the area below.
-
-# Any improvements? 
-
-- Implement unit testing for the client side.
-- Set up a bundle para produccion
