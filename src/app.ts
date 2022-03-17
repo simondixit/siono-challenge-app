@@ -1,11 +1,7 @@
 import express from 'express';
 import router from './router'
-import { connector } from 'swagger-routes-express';
-import upload from './utils/multer';
-import { removeFile } from './utils/helpers';
-import YAML from 'yamljs';
+import uploader from './utils/multer';
 import * as OpenApiValidator from 'express-openapi-validator';
-import * as api from './api/controllers';
 
 class App {
   public server;
@@ -20,53 +16,53 @@ class App {
   middlewares() {
     this.server.use(express.json());
 
-    // const cors = require('cors');
-    // this.server.use(cors({
-    //   origin: '*'
-    // }));
+    /**
+     * * Swagger setups
+     */ 
 
-    // this middleware handles multer errors and validate file constrains: (file must be text/plain and below 1gb)
-    this.server.use(
-      '/api/v1/upload',
-      (req: express.Request, res: express.Response, next: express.NextFunction) => {
-        upload(req, res, (err: any) => {
-          if(err || req.file.mimetype !== 'text/plain') {
-            req.file && removeFile(req.file.path)
-            return res.status(500).json({ message: err ? err.message : "File not supported" })
-          }
-          next()
-        })
-    })
-
-    // swagger set ups 
     const yamlSpecFile = './config/openapi.yml',
-          apiDefinition = YAML.load(yamlSpecFile),
           validatorOptions = {
             apiSpec: yamlSpecFile,
-            validateRequests: true,
-            validateResponses: true
+            validateRequests: false,
+            fileUploader: false
           }
 
     this.server.use(OpenApiValidator.middleware(validatorOptions))
 
     // error customization, if request is invalid
     this.server.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-      res.status(err.status).json({
-        error: {
-          type: 'request_validation',
-          message: err.message,
-          errors: err.errors
-        }
-      })
+
+      res.status(err.status || 500).json({ message: err.message })
     });
 
-    const connect = connector(api, apiDefinition, {
-      onCreateRoute: (method: string, descriptor: any[]) => {
-        console.log(`${method}: ${descriptor[0]} : ${(descriptor[1] as any).name}`)
-      }
+    /**
+     * * Uncomment to connect functions in /api/controllers to API schema declared
+     */ 
+    // const api = require('./api/controllers')
+    // const YAML = require('yamljs')
+    // const apiDefinition = YAML.load('./config/openapi.yml') // load the api as json
+    // const { connector } = require('swagger-routes-express')
+    // connector(api, apiDefinition, {
+    //   onCreateRoute: (method: string, descriptor: any[]) => {
+    //     console.log(`${method}: ${descriptor[0]} : ${(descriptor[1] as any).name}`)
+    //   }
+    // })(this.server)
+
+    /**
+     * * Multer setups
+     */ 
+
+    this.server.use(
+      '/api/v1/upload/:top',
+      (req: express.Request, res: express.Response, next: express.NextFunction) => {
+        uploader(req, res, (err: any) => {
+          if(err) return res.status(500).json({ message: err.message })
+          if(!req.file) return res.status(500).json({ message: "File is missing" })
+          const data: any = { ...req.file }
+
+          return res.json({ frecuencies: data.frecuencies })
+        })
     })
-    
-    connect(this.server)
   }
 
   routes() {

@@ -13,25 +13,27 @@ function App() {
   }
 
   function submitFile() {
-    setError("")
-    const formData = new FormData();
-    formData.append('file', file);
-    setLoading(true)
-    setResult(null)
-    fetch(`/api/v1/upload/${top}`, { method: 'post', body: formData })
-    .then(async response => {
-      const data = await response.json()
-      if(response.status !== 200) throw new Error(data.message);
-      return data
-    })
-    .then(response => {
-      setResult(response)
-      setLoading(false)
-    })
-    .catch(err => {
-      setError(`Error: ${err.message}`)
-      setLoading(false)
-    })
+    if(!loading) {
+      setError("")
+      const formData = new FormData();
+      formData.append('file', file);
+      setLoading(true)
+      setResult(null)
+      fetch(`/api/v1/upload/${top}`, { method: 'post', body: formData })
+      .then(async response => {
+        const data = await response.json()
+        if(response.status !== 200) throw new Error(data.message);
+        return data
+      })
+      .then(response => {
+        setResult(response)
+        setLoading(false)
+      })
+      .catch(err => {
+        setError(`Error: ${err.message}`)
+        setLoading(false)
+      })
+    }
   }
 
   return (
@@ -47,7 +49,7 @@ function App() {
           </label>
           <div className="submit-wrapper">
             <input type="number" placeholder="1" onChange={(e) => setTop(e.target.value)} />
-            <button className="button" onClick={submitFile}>Submit</button>
+            <button className="button" onClick={submitFile} disabled={loading}>Submit</button>
           </div>
         </div>
         <ul className="list-wrapper">
